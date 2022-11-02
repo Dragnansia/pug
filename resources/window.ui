@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<interface>
+  <menu id="main-menu">
+    <item>
+      <attribute name="label" translatable="yes">_Keyboard Shortcuts</attribute>
+      <attribute name="action">win.show-help-overlay</attribute>
+    </item>
+    <item>
+      <attribute name="label" translatable="yes">About PUG</attribute>
+    </item>
+  </menu>
+  <template class="Window" parent="GtkApplicationWindow">
+    <property name="title">PUG</property>
+    <child type="titlebar">
+      <object class="GtkHeaderBar">
+        <child type="end">
+          <object class="GtkMenuButton">
+            <property name="icon-name">open-menu-symbolic</property>
+            <property name="menu-model">main-menu</property>
+          </object>
+	</child>
+      </object>
+    </child>
+  </template>
+</interface>

@@ -3,6 +3,13 @@ name = "pug"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+adw = { version = "0.2.0", package = "libadwaita" }
+
+[dependencies.gtk]
+package = "gtk4"
+version = "0.5.0"
+features = ["v4_6"]
+
+[build-dependencies]
+glib-build-tools = "0.16.0"
