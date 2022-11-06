@@ -1,23 +1,32 @@
+use adw::subclass::prelude::{AdwApplicationWindowImpl, WidgetClassSubclassExt};
 use gtk::{
-    glib,
+    gio::Settings,
+    glib::{self, once_cell::sync::OnceCell},
     prelude::InitializingWidgetExt,
     subclass::{
         application_window::ApplicationWindowImpl,
-        prelude::{ObjectImpl, ObjectImplExt, ObjectSubclass, WidgetImpl, WindowImpl},
+        prelude::{
+            ObjectImpl, ObjectImplExt, ObjectSubclass, ObjectSubclassExt, WidgetImpl, WindowImpl,
+        },
         widget::CompositeTemplateClass,
     },
-    ApplicationWindow, CompositeTemplate,
+    CompositeTemplate, ListBox, TemplateChild,
 };
 
 #[derive(CompositeTemplate, Default, Debug)]
 #[template(resource = "/org/pug/window.ui")]
-pub struct Window {}
+pub struct Window {
+    #[template_child]
+    pub launcher_list: TemplateChild<ListBox>,
+
+    pub settings: OnceCell<Settings>,
+}
 
 #[glib::object_subclass]
 impl ObjectSubclass for Window {
     const NAME: &'static str = "Window";
     type Type = super::Window;
-    type ParentType = ApplicationWindow;
+    type ParentType = adw::ApplicationWindow;
 
     fn class_init(klass: &mut Self::Class) {
         klass.bind_template();
@@ -31,9 +40,23 @@ impl ObjectSubclass for Window {
 impl ObjectImpl for Window {
     fn constructed(&self) {
         self.parent_constructed();
+
+        let obj = self.obj();
+        obj.setup_settings();
+        obj.load_window_size();
     }
 }
 
-impl WindowImpl for Window {}
+impl WindowImpl for Window {
+    fn close_request(&self) -> glib::signal::Inhibit {
+        self.obj()
+            .save_window_size()
+            .expect("Failed to save window state");
+
+        gtk::Inhibit(false)
+    }
+}
+
 impl ApplicationWindowImpl for Window {}
+impl AdwApplicationWindowImpl for Window {}
 impl WidgetImpl for Window {}
