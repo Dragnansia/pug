@@ -4,20 +4,17 @@ use gtk::{
     glib::{self, once_cell::sync::OnceCell},
     prelude::InitializingWidgetExt,
     subclass::{
-        application_window::ApplicationWindowImpl,
-        prelude::{
-            ObjectImpl, ObjectImplExt, ObjectSubclass, ObjectSubclassExt, WidgetImpl, WindowImpl,
-        },
-        widget::CompositeTemplateClass,
+        application_window::ApplicationWindowImpl, prelude::*, widget::CompositeTemplateClass,
     },
-    CompositeTemplate, ListBox, TemplateChild,
 };
 
-#[derive(CompositeTemplate, Default, Debug)]
+#[derive(gtk::CompositeTemplate, Default, Debug)]
 #[template(resource = "/org/pug/window.ui")]
 pub struct Window {
     #[template_child]
-    pub launcher_list: TemplateChild<ListBox>,
+    pub launcher_list: gtk::TemplateChild<gtk::ListBox>,
+    #[template_child]
+    pub add_version: gtk::TemplateChild<gtk::Button>,
 
     pub settings: OnceCell<Settings>,
 }
@@ -44,6 +41,8 @@ impl ObjectImpl for Window {
         let obj = self.obj();
         obj.setup_settings();
         obj.load_window_size();
+
+        obj.setup_actions();
     }
 }
 

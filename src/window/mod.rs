@@ -1,14 +1,14 @@
 mod imp;
 
+use crate::APP_ID;
+use adw::prelude::*;
 use gtk::{
     gio,
-    glib::{self, wrapper, Object},
+    glib::{self, clone, wrapper},
     prelude::SettingsExt,
-    subclass::prelude::ObjectSubclassIsExt,
-    traits::GtkWindowExt,
+    subclass::prelude::*,
+    traits::{DialogExt, GtkWindowExt, NativeDialogExt, WidgetExt},
 };
-
-use crate::APP_ID;
 
 wrapper! {
     pub struct Window(ObjectSubclass<imp::Window>)
@@ -19,7 +19,7 @@ wrapper! {
 
 impl Window {
     pub fn new(app: &adw::Application) -> Self {
-        Object::builder().property("application", app).build()
+        glib::Object::builder().property("application", app).build()
     }
 
     fn setup_settings(&self) {
@@ -59,5 +59,88 @@ impl Window {
         if is_maximized {
             self.maximize();
         }
+    }
+
+    fn setup_actions(&self) {
+        let action_new_launcher = gio::SimpleAction::new("add_new_launcher", None);
+        action_new_launcher.connect_activate(clone!(@weak self as window => move |_,_| {
+            window.add_new_launcher();
+        }));
+
+        self.add_action(&action_new_launcher);
+    }
+
+    fn add_new_launcher(&self) {
+        let dialog = gtk::Dialog::with_buttons(
+            Some("Add custom launcher"),
+            Some(self),
+            gtk::DialogFlags::MODAL
+                | gtk::DialogFlags::DESTROY_WITH_PARENT
+                | gtk::DialogFlags::USE_HEADER_BAR,
+            &[
+                ("Cancel", gtk::ResponseType::Cancel),
+                ("Add", gtk::ResponseType::Accept),
+            ],
+        );
+        dialog.set_default_response(gtk::ResponseType::Accept);
+
+        let dialog_button = dialog
+            .widget_for_response(gtk::ResponseType::Accept)
+            .expect("");
+        dialog_button.set_sensitive(false);
+
+        let folder_choose_button = gtk::Button::builder()
+            .label("Choose folder")
+            .margin_end(12)
+            .margin_top(12)
+            .margin_start(12)
+            .margin_bottom(4)
+            .build();
+        folder_choose_button.connect_clicked(
+            clone!(@weak dialog, @weak folder_choose_button, @weak self as window => move |_| {
+            let folder_choose = gtk::FileChooserNative::new(
+                Some("Choose custom launcher folder"),
+                Some(&dialog),
+                gtk::FileChooserAction::SelectFolder,
+                Some("Choose"),
+                Some("Cancel")
+            );
+
+            folder_choose.connect_response(
+                clone!(@strong folder_choose, @weak folder_choose_button, @weak window => move |info, response| {
+                    if response != gtk::ResponseType::Accept {
+                        return;
+                    }
+
+                    println!("Files: {:?}", info);
+                    folder_choose_button.set_tooltip_text(Some("Hello World"));
+                }),
+            );
+            folder_choose.show();
+            }),
+        );
+
+        let launcher_type = gtk::DropDown::builder()
+            .model(&gtk::StringList::new(&["Steam", "Lutris"]))
+            .enable_search(true)
+            .margin_end(12)
+            .margin_top(4)
+            .margin_start(12)
+            .margin_bottom(12)
+            .build();
+
+        dialog.content_area().append(&folder_choose_button);
+        dialog.content_area().append(&launcher_type);
+        dialog.connect_response(
+            clone!(@weak self as window, @weak folder_choose_button => move |dialog, response| {
+                dialog.destroy();
+
+                if response != gtk::ResponseType::Accept {
+                    return;
+                }
+            }),
+        );
+
+        dialog.show();
     }
 }

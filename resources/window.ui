@@ -26,6 +26,11 @@
                   <lookup name="folded">leaflet</lookup>
                 </binding>
                 <child type="start">
+                  <object class="GtkButton">
+                    <property name="icon-name">list-add-symbolic</property>
+                    <property name="tooltip-text" translatable="yes">New Launcher</property>
+                    <property name="action-name">win.add_new_launcher</property>
+                  </object>
                 </child>
               </object>
             </child>
@@ -62,8 +67,8 @@
 		  <object class="AdwWindowTitle" />
 		</property>
 		<child type="start">
-		  <object class="GtkButton">
-		    <property name="label">Add version</property>
+		  <object class="GtkButton" id="add_version">
+		    <property name="label" translatable="yes">Add version</property>
 		  </object>
 		</child>
 		<child type="end">
