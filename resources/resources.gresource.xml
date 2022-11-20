@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="URF-8"?>
 <gresources>
-  <gresource prefix="/org/pug/">
-    <file compressed="true" preprocess="xml-stripblanks">window.ui</file>
+  <gresource prefix="/org/pug">
+    <file compressed="true" preprocess="xml-stripblanks">ui/window.ui</file>
+    <file compressed="true">images/steam.png</file>
+    <file compressed="true">images/lutris.png</file>
+    <file compressed="true">images/heroic.png</file>
   </gresource>
 </gresources>

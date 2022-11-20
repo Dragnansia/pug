@@ -1,3 +1,5 @@
+mod compat_tool;
+mod launcher;
 mod window;
 
 use gtk::{gio, prelude::*};
@@ -9,7 +11,6 @@ fn main() {
     gio::resources_register_include!("resources.gresource").expect("Failed to register ressource");
 
     let app = adw::Application::builder().application_id(APP_ID).build();
-
     app.connect_startup(setup_shortcut);
     app.connect_activate(build_ui);
     app.run();

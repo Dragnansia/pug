@@ -1,6 +1,5 @@
 mod imp;
 
-use crate::APP_ID;
 use adw::prelude::*;
 use gtk::{
     gio,
@@ -8,6 +7,11 @@ use gtk::{
     prelude::SettingsExt,
     subclass::prelude::*,
     traits::{DialogExt, GtkWindowExt, NativeDialogExt, WidgetExt},
+};
+
+use crate::{
+    launcher::{LauncherData, LauncherObject},
+    APP_ID,
 };
 
 wrapper! {
@@ -70,6 +74,105 @@ impl Window {
         self.add_action(&action_new_launcher);
     }
 
+    fn setup_callbacks(&self) {
+        self.imp()
+            .back_button
+            .connect_clicked(clone!(@weak self as window => move |_| {
+                window.imp().leaflet.navigate(adw::NavigationDirection::Back);
+            }));
+
+        self.imp().launcher_list.connect_row_activated(
+            clone!(@weak self as window => move |_, row| {
+                let index = row.index();
+                let selected_launcher = window
+                    .launchers()
+                    .item(index as u32)
+                    .expect("There needs to be an object at this position")
+                    .downcast::<LauncherObject>()
+                    .expect("The object needs to be a `LauncherObject`");
+
+                window.set_current_launcher(selected_launcher);
+                window.imp().leaflet.navigate(adw::NavigationDirection::Forward);
+            }),
+        );
+    }
+
+    fn setup_launchers(&self) {
+        let launchers = gio::ListStore::new(LauncherObject::static_type());
+        self.imp()
+            .launchers
+            .set(launchers.clone())
+            .expect("Could not set launchers");
+
+        self.imp().launcher_list.bind_model(
+            Some(&launchers),
+            clone!(@weak self as window => @default-panic, move |obj| {
+                let launcher_object = obj
+                    .downcast_ref()
+                    .expect("The object should be of type `LauncherObject`");
+
+                let row = window.create_launcher_row(launcher_object);
+                row.upcast()
+            }),
+        )
+    }
+
+    fn get_datas(&self) {
+        let launchers: Vec<LauncherObject> = LauncherData::find_all_launchers()
+            .into_iter()
+            .map(LauncherObject::from_launcher_data)
+            .collect();
+
+        self.launchers().extend_from_slice(&launchers);
+    }
+
+    fn create_launcher_row(&self, launcher_object: &LauncherObject) -> gtk::ListBoxRow {
+        let icon = gtk::Image::builder()
+            .resource(&launcher_object.imp().icon.borrow())
+            .icon_size(gtk::IconSize::Large)
+            .build();
+
+        let label = gtk::Label::builder()
+            .ellipsize(gtk::pango::EllipsizeMode::End)
+            .xalign(0.0f32)
+            .margin_start(12)
+            .build();
+
+        launcher_object
+            .bind_property("name", &label, "label")
+            .flags(glib::BindingFlags::SYNC_CREATE)
+            .build();
+
+        let hori_box = gtk::Box::builder()
+            .orientation(gtk::Orientation::Horizontal)
+            .build();
+        hori_box.append(&icon);
+        hori_box.append(&label);
+        hori_box.set_tooltip_text(Some(&launcher_object.imp().name()));
+
+        gtk::ListBoxRow::builder().child(&hori_box).build()
+    }
+
+    fn _current_launcher(&self) -> LauncherObject {
+        self.imp()
+            .current_launcher
+            .borrow()
+            .clone()
+            .expect("`current_launcher` should be set in `set_current_launcher`")
+    }
+
+    fn launchers(&self) -> gio::ListStore {
+        self.imp()
+            .launchers
+            .get()
+            .expect("`launchers` should be set in `setup_launchers`")
+            .clone()
+    }
+
+    fn set_current_launcher(&self, launcher: LauncherObject) {
+        self.imp().current_launcher.replace(Some(launcher));
+    }
+
     fn add_new_launcher(&self) {
         let dialog = gtk::Dialog::with_buttons(
             Some("Add custom launcher"),
@@ -122,7 +225,7 @@ impl Window {
 
         let launcher_type = gtk::DropDown::builder()
             .model(&gtk::StringList::new(&["Steam", "Lutris"]))
-            .enable_search(true)
+            // .enable_search(true)
             .margin_end(12)
             .margin_top(4)
             .margin_start(12)
