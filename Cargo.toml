@@ -4,13 +4,13 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-adw = { version = "0.2.0", package = "libadwaita" }
+adw = { version = "0.2.1", package = "libadwaita" }
 dirs = "4.0.0"
 
 [dependencies.gtk]
 package = "gtk4"
-version = "0.5.0"
+version = "0.5.4"
 features = ["v4_6"]
 
 [build-dependencies]
-glib-build-tools = "0.16.0"
+glib-build-tools = "0.16.3"

@@ -107,12 +107,12 @@ impl Window {
         self.imp().launcher_list.bind_model(
             Some(&launchers),
             clone!(@weak self as window => @default-panic, move |obj| {
-                let launcher_object = obj
-                    .downcast_ref()
-                    .expect("The object should be of type `LauncherObject`");
+            let launcher_object = obj
+            .downcast_ref()
+            .expect("The object should be of type `LauncherObject`");
 
-                let row = window.create_launcher_row(launcher_object);
-                row.upcast()
+            let row = window.create_launcher_row(launcher_object);
+            row.upcast()
             }),
         )
     }
@@ -216,7 +216,7 @@ impl Window {
                     }
 
                     println!("Files: {:?}", info);
-                    folder_choose_button.set_tooltip_text(Some("Hello World"));
+                    folder_choose_button.set_tooltip_text(Some(""));
                 }),
             );
             folder_choose.show();

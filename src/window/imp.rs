@@ -17,8 +17,6 @@ use crate::launcher::LauncherObject;
 pub struct Window {
     #[template_child]
     pub launcher_list: gtk::TemplateChild<gtk::ListBox>,
-    //#[template_child]
-    //pub add_version: gtk::TemplateChild<gtk::Button>,
     #[template_child]
     pub leaflet: gtk::TemplateChild<adw::Leaflet>,
     #[template_child]

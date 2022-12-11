@@ -35,7 +35,6 @@ impl LauncherData {
     }
 
     pub fn find_all_launchers() -> Vec<Self> {
-        println!("Hello world");
         Self::read_datas_files()
     }
 }
